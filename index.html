@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pokédex</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="header-inner">
+        <h1 class="logo">Pokédex</h1>
+        <div class="search-bar">
+          <input
+            id="search-input"
+            type="text"
+            placeholder="Search by name or number…"
+            autocomplete="off"
+          />
+          <button id="search-btn">Search</button>
+        </div>
+        <div class="filter-row">
+          <select id="type-filter">
+            <option value="">All types</option>
+          </select>
+          <select id="gen-filter">
+            <option value="">All generations</option>
+            <option value="1">Gen I (1–151)</option>
+            <option value="2">Gen II (152–251)</option>
+            <option value="3">Gen III (252–386)</option>
+            <option value="4">Gen IV (387–493)</option>
+            <option value="5">Gen V (494–649)</option>
+            <option value="6">Gen VI (650–721)</option>
+            <option value="7">Gen VII (722–809)</option>
+            <option value="8">Gen VIII (810–905)</option>
+            <option value="9">Gen IX (906–1025)</option>
+          </select>
+          <select id="fav-filter">
+            <option value="">Any</option>
+            <option value="favorites">Favorites ♥</option>
+          </select>
+          <select id="image-mode">
+            <option value="artwork">Artwork</option>
+            <option value="sprite">Sprite</option>
+          </select>
+          <label class="shiny-label">
+            <input type="checkbox" id="shiny-toggle" />
+            Shiny
+          </label>
+        </div>
+      </div>
+    </header>
+
+    <main class="main">
+      <div id="grid" class="grid"></div>
+      <div id="loading" class="loading hidden">
+        <div class="pokeball-spinner"></div>
+        <p>Loading…</p>
+      </div>
+      <div id="error-msg" class="error hidden"></div>
+      <button id="load-more" class="load-more hidden">Load more</button>
+    </main>
+  </div>
+
+  <!-- Detail modal -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card">
+      <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
