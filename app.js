@@ -14,7 +14,7 @@ let activeType    = '';
 let activeGen     = '';
 let searchTerm    = '';
 let favoritesOnly = false;
-let imageMode     = 'artwork'; // 'artwork' | 'sprite'
+let imageMode     = 'sprite'; // 'artwork' | 'sprite'
 let showShiny     = false;
 
 const favorites = new Set(
@@ -102,7 +102,11 @@ function updateCardImages() {
       sprDefault: img.dataset.sprDefault,
       sprShiny:   img.dataset.sprShiny,
     };
-    img.src = pickSprite(urls);
+    const newSrc = pickSprite(urls);
+    if (img.src === newSrc) return;
+    img.style.opacity = '0';
+    img.src = newSrc;
+    img.onload = img.onerror = () => { img.style.opacity = '1'; };
   });
 }
 
@@ -422,8 +426,8 @@ imageModeSelect.addEventListener('change', () => {
 });
 shinyToggle.addEventListener('change', () => {
   showShiny = shinyToggle.checked;
-  updateCardImages();
   if (showShiny) burstStars(shinyToggle);
+  requestAnimationFrame(updateCardImages);
 });
 
 function burstStars(originEl) {
@@ -444,35 +448,6 @@ function burstStars(originEl) {
   wave.style.cssText = `left:${cx}px; top:${cy}px; width:30px; height:30px;`;
   document.body.appendChild(wave);
   wave.addEventListener('animationend', () => wave.remove(), { once: true });
-
-  // Particles — random destinations spread across the entire viewport
-  const glyphs = ['★', '✦', '✧', '✸', '✵', '✴', '⭐', '💫', '✨', '🌟'];
-  const colors = ['#ffd700', '#fff', '#ffe566', '#ffc8dd', '#aee6ff', '#c8b8ff'];
-
-  for (let i = 0; i < 70; i++) {
-    const star = document.createElement('span');
-    star.className = 'star-particle';
-    star.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
-
-    // Aim at a fully random point on screen, biased toward edges for drama
-    const targetX = Math.random() * window.innerWidth;
-    const targetY = Math.random() * window.innerHeight;
-
-    Object.assign(star.style, {
-      left:      `${cx}px`,
-      top:       `${cy}px`,
-      fontSize:  `${0.7 + Math.random() * 2.6}rem`,
-      color:     colors[Math.floor(Math.random() * colors.length)],
-      '--dx':    `${targetX - cx}px`,
-      '--dy':    `${targetY - cy}px`,
-      '--dur':   `${600 + Math.random() * 900}ms`,
-      '--delay': `${Math.random() * 150}ms`,
-      '--rot':   `${(Math.random() > 0.5 ? 1 : -1) * (1 + Math.random() * 3)}turn`,
-    });
-
-    document.body.appendChild(star);
-    star.addEventListener('animationend', () => star.remove(), { once: true });
-  }
 
   // Label flash
   const label = shinyToggle.closest('.shiny-label');
