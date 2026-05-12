@@ -1,0 +1,213 @@
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.75);
+  backdrop-filter: blur(4px);
+}
+
+.card {
+  position: relative;
+  background: #16213e;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,.7);
+  padding: 28px 24px 24px;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 14px; right: 14px;
+  background: none;
+  border: none;
+  color: #8892b0;
+  font-size: 1.2rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: color .15s;
+}
+.closeBtn:hover { color: #eaeaea; }
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 60px 20px;
+  color: #8892b0;
+  min-height: 200px;
+}
+
+.pokeballSpinner {
+  width: 50px; height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(to bottom, #e3350d 50%, #fff 50%);
+  border: 3px solid #333;
+  position: relative;
+  animation: spin 1s linear infinite;
+}
+.pokeballSpinner::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 12px; height: 12px;
+  background: #fff;
+  border-radius: 50%;
+  border: 3px solid #333;
+}
+
+.error { color: #ff6b6b; text-align: center; padding: 20px; }
+
+/* Detail layout */
+.detailHeader { text-align: center; margin-bottom: 16px; position: relative; }
+
+.favBtn {
+  position: absolute;
+  top: 0; right: 0;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: rgba(255,255,255,.2);
+  cursor: pointer;
+  line-height: 1;
+  padding: 2px;
+  transition: color .15s, transform .15s;
+}
+.favBtn:hover { color: #ff6b8a; transform: scale(1.2); }
+.favBtn.active { color: #ff3d67; }
+
+.detailNum { color: #8892b0; font-size: .85rem; font-weight: 600; }
+
+.detailName {
+  font-size: 2rem;
+  font-weight: 900;
+  text-transform: capitalize;
+  margin: 4px 0 10px;
+  color: #eaeaea;
+}
+
+.detailImg {
+  width: 160px; height: 160px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  transition: opacity 0.2s ease;
+}
+
+.detailTypes {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.section { margin-bottom: 18px; }
+.section h3 {
+  font-size: .8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #8892b0;
+  margin-bottom: 10px;
+}
+
+.flavourText {
+  font-size: .9rem;
+  color: #8892b0;
+  line-height: 1.6;
+  font-style: italic;
+}
+
+/* Stat bars */
+.statRow {
+  display: grid;
+  grid-template-columns: 110px 40px 1fr;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: .88rem;
+}
+.statLabel { text-transform: capitalize; color: #8892b0; }
+.statVal { font-weight: 700; text-align: right; color: #eaeaea; }
+.statBarBg {
+  background: rgba(255,255,255,.1);
+  border-radius: 6px;
+  height: 8px;
+  overflow: hidden;
+}
+.statBarFill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width .5s ease;
+}
+
+/* Info grid */
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.infoItem {
+  background: rgba(255,255,255,.05);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+.infoItem label {
+  display: block;
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: #8892b0;
+  margin-bottom: 3px;
+}
+.infoItem span { font-weight: 700; font-size: .95rem; color: #eaeaea; }
+
+/* Abilities */
+.abilityList { display: flex; flex-wrap: wrap; gap: 8px; }
+.abilityPill {
+  background: rgba(255,255,255,.08);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: .85rem;
+  text-transform: capitalize;
+  color: #eaeaea;
+}
+.abilityPill.hidden { border: 1px dashed #8892b0; }
+
+/* Evolution chain */
+.evoChain {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+.evoStep { display: flex; align-items: center; gap: 6px; }
+.evoArrow { color: #8892b0; font-size: 1.2rem; }
+.evoMon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  gap: 2px;
+  transition: opacity .15s;
+}
+.evoMon:hover { opacity: .75; }
+.evoMon img { width: 56px; height: 56px; image-rendering: pixelated; }
+.evoMon span { font-size: .75rem; text-transform: capitalize; font-weight: 600; color: #eaeaea; }
+
+@media (max-width: 480px) {
+  .detailImg { width: 120px; height: 120px; }
+}

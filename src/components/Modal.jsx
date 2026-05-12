@@ -1,0 +1,185 @@
+import { useState, useEffect, useCallback } from 'react';
+import { fetchJson, API } from '../utils/api';
+import { spriteUrls, pickSprite } from '../utils/sprites';
+import { pad, idFromUrl, statLabel, statColor } from '../utils/helpers';
+import styles from './Modal.module.css';
+
+const spriteCache = {};
+async function getSpriteById(id) {
+  if (spriteCache[id]) return spriteCache[id];
+  const p = await fetchJson(`${API}/pokemon/${id}`);
+  const url = p.sprites.front_default || '';
+  spriteCache[id] = url;
+  return url;
+}
+
+async function buildEvoChain(url) {
+  try {
+    const data = await fetchJson(url);
+    const steps = [];
+    let node = data.chain;
+    while (node) {
+      const id = idFromUrl(node.species.url);
+      const sprite = await getSpriteById(id);
+      steps.push({ id, name: node.species.name, sprite });
+      node = node.evolves_to?.[0];
+    }
+    return steps.length > 1 ? steps : [];
+  } catch {
+    return [];
+  }
+}
+
+export default function Modal({ pokemonId, imageMode, showShiny, favorites, onToggleFavorite, onClose, onEvoClick }) {
+  const [pokemon, setPokemon] = useState(null);
+  const [species, setSpecies] = useState(null);
+  const [evoSteps, setEvoSteps] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!pokemonId) return;
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    setPokemon(null);
+
+    async function load() {
+      try {
+        const [poke, spec] = await Promise.all([
+          fetchJson(`${API}/pokemon/${pokemonId}`),
+          fetchJson(`${API}/pokemon-species/${pokemonId}`),
+        ]);
+        const evos = await buildEvoChain(spec.evolution_chain.url);
+        if (!cancelled) {
+          setPokemon(poke);
+          setSpecies(spec);
+          setEvoSteps(evos);
+        }
+      } catch {
+        if (!cancelled) setError('Failed to load Pokémon details.');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [pokemonId]);
+
+  const handleKey = useCallback(e => { if (e.key === 'Escape') onClose(); }, [onClose]);
+  useEffect(() => {
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [handleKey]);
+
+  const isFav = pokemon ? favorites.has(pokemon.id) : false;
+  const urls = pokemon ? spriteUrls(pokemon.sprites) : null;
+  const sprite = urls ? pickSprite(urls, imageMode, showShiny) : '';
+
+  const flavour = species?.flavor_text_entries
+    .find(e => e.language.name === 'en')
+    ?.flavor_text.replace(/\f|\n/g, ' ') || '';
+  const genus = species?.genera.find(g => g.language.name === 'en')?.genus || '';
+
+  return (
+    <div className={styles.modal} role="dialog" aria-modal="true">
+      <div className={styles.backdrop} onClick={onClose} />
+      <div className={styles.card}>
+        <button className={styles.closeBtn} onClick={onClose} aria-label="Close">✕</button>
+
+        {loading && (
+          <div className={styles.loading}>
+            <div className={styles.pokeballSpinner} />
+            <p>Loading…</p>
+          </div>
+        )}
+
+        {error && <p className={styles.error}>{error}</p>}
+
+        {pokemon && species && (
+          <>
+            <div className={styles.detailHeader}>
+              <button
+                className={`${styles.favBtn}${isFav ? ' ' + styles.active : ''}`}
+                aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}
+                onClick={() => onToggleFavorite(pokemon.id)}
+              >♥</button>
+              <div className={styles.detailNum}>#{pad(pokemon.id)} · {genus}</div>
+              <div className={styles.detailName}>{pokemon.name}</div>
+              <img className={styles.detailImg} src={sprite} alt={pokemon.name} />
+              <div className={styles.detailTypes}>
+                {pokemon.types.map(t => (
+                  <span key={t.type.name} className={`type-badge type-${t.type.name}`}>{t.type.name}</span>
+                ))}
+              </div>
+            </div>
+
+            {flavour && (
+              <div className={styles.section}>
+                <p className={styles.flavourText}>{flavour}</p>
+              </div>
+            )}
+
+            <div className={styles.section}>
+              <h3>Info</h3>
+              <div className={styles.infoGrid}>
+                <div className={styles.infoItem}><label>Height</label><span>{(pokemon.height / 10).toFixed(1)} m</span></div>
+                <div className={styles.infoItem}><label>Weight</label><span>{(pokemon.weight / 10).toFixed(1)} kg</span></div>
+                <div className={styles.infoItem}><label>Base Exp</label><span>{pokemon.base_experience ?? '—'}</span></div>
+                <div className={styles.infoItem}><label>Capture Rate</label><span>{species.capture_rate}</span></div>
+              </div>
+            </div>
+
+            <div className={styles.section}>
+              <h3>Base Stats</h3>
+              {pokemon.stats.map(s => {
+                const pct = Math.min((s.base_stat / 255) * 100, 100).toFixed(1);
+                return (
+                  <div key={s.stat.name} className={styles.statRow}>
+                    <span className={styles.statLabel}>{statLabel(s.stat.name)}</span>
+                    <span className={styles.statVal}>{s.base_stat}</span>
+                    <div className={styles.statBarBg}>
+                      <div className={styles.statBarFill} style={{ width: `${pct}%`, background: statColor(s.base_stat) }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className={styles.section}>
+              <h3>Abilities</h3>
+              <div className={styles.abilityList}>
+                {pokemon.abilities.map(a => (
+                  <span
+                    key={a.ability.name}
+                    className={`${styles.abilityPill}${a.is_hidden ? ' ' + styles.hidden : ''}`}
+                    title={a.is_hidden ? 'Hidden ability' : ''}
+                  >
+                    {a.ability.name}{a.is_hidden ? ' ★' : ''}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {evoSteps.length > 0 && (
+              <div className={styles.section}>
+                <h3>Evolution Chain</h3>
+                <div className={styles.evoChain}>
+                  {evoSteps.map((s, i) => (
+                    <div key={s.id} className={styles.evoStep}>
+                      {i > 0 && <span className={styles.evoArrow}>→</span>}
+                      <div className={styles.evoMon} onClick={() => onEvoClick(s.id)}>
+                        <img src={s.sprite} alt={s.name} />
+                        <span>{s.name}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
