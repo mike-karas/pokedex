@@ -170,6 +170,7 @@ body {
   height: 96px;
   object-fit: contain;
   image-rendering: pixelated;
+  transition: opacity 0.2s ease;
 }
 .card-name {
   font-size: .95rem;
@@ -417,35 +418,6 @@ body {
 .type-rock      { background: var(--rock); }
 .type-ghost     { background: var(--ghost); }
 .type-steel     { background: var(--steel); color: #333; }
-
-/* ── Shiny star burst particles ── */
-.star-particle {
-  position: fixed;
-  pointer-events: none;
-  z-index: 9999;
-  line-height: 1;
-  animation: star-burst var(--dur, 800ms) cubic-bezier(.2, .8, .4, 1) var(--delay, 0ms) forwards;
-  text-shadow:
-    0 0 6px  currentColor,
-    0 0 16px currentColor,
-    0 0 32px #fff9,
-    0 0 50px currentColor;
-  will-change: transform, opacity;
-}
-@keyframes star-burst {
-  0%  {
-    transform: translate(-50%, -50%) translate(0, 0) scale(0) rotate(0turn);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-    transform: translate(-50%, -50%) translate(calc(var(--dx)*.04), calc(var(--dy)*.04)) scale(1.6) rotate(0.1turn);
-  }
-  100% {
-    transform: translate(-50%, -50%) translate(var(--dx), var(--dy)) scale(0) rotate(var(--rot, 1.5turn));
-    opacity: 0;
-  }
-}
 
 /* Expanding shockwave ring */
 .shockwave {
