@@ -1,0 +1,57 @@
+.card {
+  background: #16213e;
+  border-radius: 14px;
+  padding: 16px 12px 12px;
+  cursor: pointer;
+  transition: transform .18s, box-shadow .18s;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,.45);
+  position: relative;
+  overflow: hidden;
+}
+.card:hover { transform: translateY(-5px); box-shadow: 0 8px 28px rgba(0,0,0,.6); }
+
+.favBtn {
+  position: absolute;
+  top: 8px; right: 8px;
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: rgba(255,255,255,.2);
+  cursor: pointer;
+  line-height: 1;
+  padding: 2px;
+  transition: color .15s, transform .15s;
+  z-index: 1;
+}
+.favBtn:hover { color: #ff6b8a; transform: scale(1.2); }
+.favBtn.active { color: #ff3d67; }
+
+.cardNum {
+  font-size: .75rem;
+  color: #8892b0;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.cardImg {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  transition: opacity 0.2s ease;
+}
+
+.cardName {
+  font-size: .95rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  margin: 6px 0 8px;
+}
+
+.types {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
