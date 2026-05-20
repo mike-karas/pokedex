@@ -2,9 +2,58 @@ import { useState, useEffect, useCallback } from 'react';
 import { fetchJson, API } from '../utils/api';
 import { spriteUrls, pickSprite } from '../utils/sprites';
 import { pad, idFromUrl, statLabel, statColor } from '../utils/helpers';
+import { attackMultiplier, superEffectiveTypes } from '../utils/typeChart';
 import styles from './Modal.module.css';
 
 const spriteCache = {};
+const typeDataCache = {};
+
+async function fetchTypeData(typeName) {
+  if (typeDataCache[typeName]) return typeDataCache[typeName];
+  const data = await fetchJson(`${API}/type/${typeName}`);
+  typeDataCache[typeName] = data;
+  return data;
+}
+
+async function buildStrongAgainst(pokemon) {
+  const attackerTypes = pokemon.types.map(t => t.type.name);
+  const selectedBst = pokemon.stats.reduce((sum, s) => sum + s.base_stat, 0);
+
+  const targets = superEffectiveTypes(attackerTypes);
+  if (targets.length === 0) return [];
+
+  const typeLists = await Promise.all(targets.map(t => fetchTypeData(t)));
+
+  const candidateIds = new Set();
+  for (const typeData of typeLists) {
+    for (const entry of typeData.pokemon) {
+      const id = idFromUrl(entry.pokemon.url);
+      if (id !== pokemon.id && id >= 1 && id <= 1025) candidateIds.add(id);
+    }
+  }
+  if (candidateIds.size === 0) return [];
+
+  const shuffled = [...candidateIds].sort(() => Math.random() - 0.5).slice(0, 12);
+  const candidates = await Promise.all(shuffled.map(id => fetchJson(`${API}/pokemon/${id}`)));
+
+  const bstBand = selectedBst * 0.25;
+  let filtered = candidates.filter(c => {
+    const defTypes = c.types.map(t => t.type.name);
+    if (attackMultiplier(attackerTypes, defTypes) <= 1) return false;
+    const cBst = c.stats.reduce((sum, s) => sum + s.base_stat, 0);
+    return Math.abs(cBst - selectedBst) <= bstBand;
+  });
+
+  // Relax BST constraint if not enough matches
+  if (filtered.length < 3) {
+    filtered = candidates.filter(c =>
+      attackMultiplier(attackerTypes, c.types.map(t => t.type.name)) > 1
+    );
+  }
+
+  return filtered.sort(() => Math.random() - 0.5).slice(0, 3);
+}
+
 async function getSpriteById(id) {
   if (spriteCache[id]) return spriteCache[id];
   const p = await fetchJson(`${API}/pokemon/${id}`);
@@ -34,6 +83,7 @@ export default function Modal({ pokemonId, imageMode, showShiny, favorites, onTo
   const [pokemon, setPokemon] = useState(null);
   const [species, setSpecies] = useState(null);
   const [evoSteps, setEvoSteps] = useState([]);
+  const [strongAgainst, setStrongAgainst] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -43,23 +93,30 @@ export default function Modal({ pokemonId, imageMode, showShiny, favorites, onTo
     setLoading(true);
     setError(null);
     setPokemon(null);
+    setStrongAgainst([]);
 
     async function load() {
       try {
-        const [poke, spec] = await Promise.all([
-          fetchJson(`${API}/pokemon/${pokemonId}`),
-          fetchJson(`${API}/pokemon-species/${pokemonId}`),
-        ]);
+        const poke = await fetchJson(`${API}/pokemon/${pokemonId}`);
+        const spec = await fetchJson(poke.species.url);
         const evos = await buildEvoChain(spec.evolution_chain.url);
         if (!cancelled) {
           setPokemon(poke);
           setSpecies(spec);
           setEvoSteps(evos);
+          setLoading(false);
+        }
+        try {
+          const strong = await buildStrongAgainst(poke);
+          if (!cancelled) setStrongAgainst(strong);
+        } catch {
+          // strong-against is optional; fail silently
         }
       } catch {
-        if (!cancelled) setError('Failed to load Pokémon details.');
-      } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setError('Failed to load Pokémon details.');
+          setLoading(false);
+        }
       }
     }
     load();
@@ -174,6 +231,34 @@ export default function Modal({ pokemonId, imageMode, showShiny, favorites, onTo
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {strongAgainst.length > 0 && (
+              <div className={styles.section}>
+                <h3>Strong Against</h3>
+                <div className={styles.strongAgainstGrid}>
+                  {strongAgainst.map(p => {
+                    const mult = attackMultiplier(
+                      pokemon.types.map(t => t.type.name),
+                      p.types.map(t => t.type.name)
+                    );
+                    return (
+                      <div key={p.id} className={styles.strongMon} onClick={() => onEvoClick(p.id)}>
+                        <img src={p.sprites.front_default || ''} alt={p.name} />
+                        <span className={styles.strongMonMult}>{mult}×</span>
+                        <span className={styles.strongMonName}>{p.name}</span>
+                        <div className={styles.strongMonTypes}>
+                          {p.types.map(t => (
+                            <span key={t.type.name} className={`type-badge type-${t.type.name}`}>
+                              {t.type.name}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
