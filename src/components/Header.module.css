@@ -48,6 +48,7 @@
   border-radius: 8px;
   background: #fff;
   color: #e3350d;
+  font-size: .9rem;
   font-weight: 700;
   cursor: pointer;
   transition: opacity .15s;
@@ -71,3 +72,17 @@
   outline: none;
 }
 .filterRow select option { background: #1a1a2e; }
+
+.resetBtn {
+  padding: 7px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #fff;
+  color: #e3350d;
+  font-weight: 700;
+  font-size: .9rem;
+  cursor: pointer;
+  transition: opacity .15s;
+  white-space: nowrap;
+}
+.resetBtn:hover { opacity: .85; }

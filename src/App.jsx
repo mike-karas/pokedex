@@ -4,6 +4,7 @@ import { idFromUrl } from './utils/helpers';
 import Header from './components/Header';
 import PokemonGrid from './components/PokemonGrid';
 import Modal from './components/Modal';
+import LCDOverlay from './components/LCDOverlay';
 
 function loadFavorites() {
   try { return new Set(JSON.parse(localStorage.getItem('pokedex-favorites') || '[]')); }
@@ -17,13 +18,17 @@ export default function App() {
   const [allPokemon, setAllPokemon]     = useState([]);
   const [typeOptions, setTypeOptions]   = useState([]);
   const [activeType, setActiveType]     = useState('');
-  const [typeIds, setTypeIds]           = useState(null); // Set of ids for current type filter
+  const [typeIds, setTypeIds]           = useState(null);
+  const [habitatOptions, setHabitatOptions] = useState([]);
+  const [activeHabitat, setActiveHabitat]   = useState('');
+  const [habitatIds, setHabitatIds]         = useState(null);
   const [activeGen, setActiveGen]       = useState('');
   const [searchTerm, setSearchTerm]     = useState('');
   const [committedSearch, setCommittedSearch] = useState('');
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [imageMode, setImageMode]       = useState('sprite');
   const [showShiny, setShowShiny]       = useState(false);
+  const [showLCD, setShowLCD]           = useState(true);
   const [favorites, setFavorites]       = useState(loadFavorites);
   const [cards, setCards]               = useState([]);
   const [offset, setOffset]             = useState(0);
@@ -36,9 +41,10 @@ export default function App() {
     async function init() {
       setLoading(true);
       try {
-        const [listData, typeData] = await Promise.all([
+        const [listData, typeData, habitatData] = await Promise.all([
           fetchJson(`${API}/pokemon?limit=10000`),
           fetchJson(`${API}/type?limit=100`),
+          fetchJson(`${API}/pokemon-habitat?limit=100`),
         ]);
         setAllPokemon(listData.results.map(p => ({ ...p, id: idFromUrl(p.url) })));
         setTypeOptions(
@@ -46,6 +52,7 @@ export default function App() {
             .map(t => t.name)
             .filter(n => !['unknown', 'shadow'].includes(n))
         );
+        setHabitatOptions(habitatData.results.map(h => h.name));
       } catch {
         setError('Could not connect to PokéAPI. Check your internet connection.');
       } finally {
@@ -68,10 +75,22 @@ export default function App() {
       .catch(() => setTypeIds(null));
   }, [activeType]);
 
+  // When activeHabitat changes, fetch the habitat's pokemon id set
+  useEffect(() => {
+    if (!activeHabitat) { setHabitatIds(null); return; }
+    fetchJson(`${API}/pokemon-habitat/${activeHabitat}`)
+      .then(data => {
+        const ids = new Set(data.pokemon_species.map(s => idFromUrl(s.url)));
+        setHabitatIds(ids);
+      })
+      .catch(() => setHabitatIds(null));
+  }, [activeHabitat]);
+
   // Derived filtered list
   const filtered = useMemo(() => {
     let list = allPokemon;
     if (activeType && typeIds) list = list.filter(p => typeIds.has(p.id));
+    if (activeHabitat && habitatIds) list = list.filter(p => habitatIds.has(p.id));
     if (activeGen) {
       const [lo, hi] = GEN_RANGES[activeGen];
       list = list.filter(p => p.id >= lo && p.id <= hi);
@@ -83,7 +102,7 @@ export default function App() {
     }
     if (favoritesOnly) list = list.filter(p => favorites.has(p.id));
     return list;
-  }, [allPokemon, activeType, typeIds, activeGen, committedSearch, favoritesOnly, favorites]);
+  }, [allPokemon, activeType, typeIds, activeHabitat, habitatIds, activeGen, committedSearch, favoritesOnly, favorites]);
 
   // Reset pagination when filters change
   const prevFilteredRef = useRef(filtered);
@@ -128,6 +147,21 @@ export default function App() {
     setTypeIds(null);
   }, []);
 
+  const handleHabitatChange = useCallback(habitat => {
+    setActiveHabitat(habitat);
+    setHabitatIds(null);
+  }, []);
+
+  const handleReset = useCallback(() => {
+    handleSearch('');
+    handleTypeChange('');
+    handleHabitatChange('');
+    setActiveGen('');
+    setFavoritesOnly(false);
+    setShowShiny(false);
+    setImageMode('sprite');
+  }, [handleSearch, handleTypeChange, handleHabitatChange]);
+
   const toggleFavorite = useCallback(id => {
     setFavorites(prev => {
       const next = new Set(prev);
@@ -147,6 +181,9 @@ export default function App() {
         activeType={activeType}
         onTypeChange={handleTypeChange}
         typeOptions={typeOptions}
+        activeHabitat={activeHabitat}
+        onHabitatChange={handleHabitatChange}
+        habitatOptions={habitatOptions}
         activeGen={activeGen}
         onGenChange={setActiveGen}
         favoritesOnly={favoritesOnly}
@@ -155,6 +192,9 @@ export default function App() {
         onImageModeChange={setImageMode}
         showShiny={showShiny}
         onShinyChange={setShowShiny}
+        showLCD={showLCD}
+        onLCDChange={setShowLCD}
+        onReset={handleReset}
       />
 
       <PokemonGrid
@@ -169,6 +209,8 @@ export default function App() {
         onCardClick={setModalId}
         onLoadMore={handleLoadMore}
       />
+
+      {showLCD && <LCDOverlay />}
 
       {modalId !== null && (
         <Modal
