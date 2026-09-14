@@ -1,0 +1,55 @@
+@keyframes grain {
+  0%   { transform: translate(0,    0   ); }
+  10%  { transform: translate(-3%,  6%  ); }
+  20%  { transform: translate(5%,   -2% ); }
+  30%  { transform: translate(-4%,  3%  ); }
+  40%  { transform: translate(6%,   5%  ); }
+  50%  { transform: translate(-2%,  -6% ); }
+  60%  { transform: translate(3%,   4%  ); }
+  70%  { transform: translate(-6%,  1%  ); }
+  80%  { transform: translate(4%,   -4% ); }
+  90%  { transform: translate(-1%,  7%  ); }
+  100% { transform: translate(2%,   -2% ); }
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+
+  /* Authentic Gameboy green tint */
+  background-color: rgba(139, 172, 15, 0.04);
+
+  /* LCD dot-matrix pixel grid */
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(15, 56, 15, 0.16) 0px,
+      rgba(15, 56, 15, 0.16) 1px,
+      transparent               1px,
+      transparent               4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(15, 56, 15, 0.16) 0px,
+      rgba(15, 56, 15, 0.16) 1px,
+      transparent               1px,
+      transparent               4px
+    );
+}
+
+/* Animated film grain */
+.overlay::after {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 250px 250px;
+  animation: grain 0.18s steps(1) infinite;
+  will-change: transform;
+}

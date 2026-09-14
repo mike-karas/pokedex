@@ -208,6 +208,53 @@
 .evoMon img { width: 56px; height: 56px; image-rendering: pixelated; }
 .evoMon span { font-size: .75rem; text-transform: capitalize; font-weight: 600; color: #eaeaea; }
 
+/* Strong Against section */
+.strongAgainstGrid {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.strongMon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  gap: 4px;
+  background: rgba(255,255,255,.05);
+  border-radius: 12px;
+  padding: 10px 10px 8px;
+  min-width: 100px;
+  transition: opacity .15s, background .15s;
+}
+.strongMon:hover { opacity: .8; background: rgba(255,255,255,.09); }
+.strongMon img { width: 72px; height: 72px; image-rendering: pixelated; }
+
+.strongMonMult {
+  font-size: .78rem;
+  font-weight: 700;
+  color: #ff6b6b;
+  background: rgba(255,107,107,.15);
+  border-radius: 6px;
+  padding: 1px 7px;
+}
+
+.strongMonName {
+  font-size: .75rem;
+  text-transform: capitalize;
+  font-weight: 600;
+  color: #eaeaea;
+  text-align: center;
+}
+
+.strongMonTypes {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 @media (max-width: 480px) {
   .detailImg { width: 120px; height: 120px; }
 }

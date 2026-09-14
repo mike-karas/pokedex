@@ -45,20 +45,6 @@
   font-size: 1.1rem;
 }
 
-.loadMore {
-  display: block;
-  margin: 32px auto 0;
-  padding: 12px 36px;
-  background: #e3350d;
-  color: #fff;
-  border: none;
-  border-radius: 30px;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: opacity .15s;
-}
-.loadMore:hover { opacity: .85; }
 
 @media (max-width: 480px) {
   .grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }

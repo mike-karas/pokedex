@@ -18,10 +18,13 @@ const GEN_OPTIONS = [
 export default function Header({
   searchTerm, onSearch,
   activeType, onTypeChange, typeOptions,
+  activeHabitat, onHabitatChange, habitatOptions,
   activeGen, onGenChange,
   favoritesOnly, onFavChange,
   imageMode, onImageModeChange,
   showShiny, onShinyChange,
+  showLCD, onLCDChange,
+  onReset,
 }) {
   const shinyRef = useRef(null);
 
@@ -56,6 +59,15 @@ export default function Header({
             ))}
           </select>
 
+          <select value={activeHabitat} onChange={e => onHabitatChange(e.target.value)}>
+            <option value="">All habitats</option>
+            {habitatOptions.map(h => (
+              <option key={h} value={h}>
+                {h.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+              </option>
+            ))}
+          </select>
+
           <select value={activeGen} onChange={e => onGenChange(e.target.value)}>
             {GEN_OPTIONS.map(o => (
               <option key={o.value} value={o.value}>{o.label}</option>
@@ -80,6 +92,17 @@ export default function Header({
             />
             Shiny
           </label>
+
+          <label className="lcd-label">
+            <input
+              type="checkbox"
+              checked={showLCD}
+              onChange={e => onLCDChange(e.target.checked)}
+            />
+            LCD
+          </label>
+
+          <button className={styles.resetBtn} onClick={onReset}>Reset</button>
         </div>
       </div>
     </header>

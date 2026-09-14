@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import PokemonCard from './PokemonCard';
 import styles from './PokemonGrid.module.css';
 
@@ -6,6 +7,20 @@ export default function PokemonGrid({
   imageMode, showShiny, favorites,
   onToggleFavorite, onCardClick, onLoadMore,
 }) {
+  const sentinelRef = useRef(null);
+
+  useEffect(() => {
+    if (!hasMore || loading) return;
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) onLoadMore(); },
+      { rootMargin: '300px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore, loading, onLoadMore]);
+
   return (
     <main className={styles.main}>
       {error && <div className={styles.error}>{error}</div>}
@@ -31,9 +46,7 @@ export default function PokemonGrid({
         </div>
       )}
 
-      {hasMore && !loading && (
-        <button className={styles.loadMore} onClick={onLoadMore}>Load more</button>
-      )}
+      {hasMore && <div ref={sentinelRef} />}
     </main>
   );
 }
