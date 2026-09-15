@@ -6,8 +6,8 @@ export const GEN_RANGES = {
   5: [494, 649], 6: [650, 721], 7: [722, 809], 8: [810, 905], 9: [906, 1025],
 };
 
-export async function fetchJson(url) {
-  const res = await fetch(url);
+export async function fetchJson(url, options) {
+  const res = await fetch(url, options);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }

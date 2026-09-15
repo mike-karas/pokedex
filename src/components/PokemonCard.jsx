@@ -28,7 +28,7 @@ export default function PokemonCard({ pokemon, imageMode, showShiny, isFavorite,
       <div className={styles.cardNum}>#{pad(pokemon.id)}</div>
       <img
         ref={imgRef}
-        className={styles.cardImg}
+        className={`${styles.cardImg}${imageMode !== 'artwork' ? ' ' + styles.pixelated : ''}`}
         src={src}
         alt={pokemon.name}
         loading="lazy"

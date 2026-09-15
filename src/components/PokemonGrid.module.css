@@ -16,26 +16,7 @@
   align-items: center;
   gap: 16px;
   padding: 60px 20px;
-  color: #8892b0;
-}
-
-.pokeballSpinner {
-  width: 50px; height: 50px;
-  border-radius: 50%;
-  background: linear-gradient(to bottom, #e3350d 50%, #fff 50%);
-  border: 3px solid #333;
-  position: relative;
-  animation: spin 1s linear infinite;
-}
-.pokeballSpinner::after {
-  content: '';
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%,-50%);
-  width: 12px; height: 12px;
-  background: #fff;
-  border-radius: 50%;
-  border: 3px solid #333;
+  color: var(--muted);
 }
 
 .error {

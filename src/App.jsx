@@ -24,7 +24,6 @@ export default function App() {
   const [habitatIds, setHabitatIds]         = useState(null);
   const [activeGen, setActiveGen]       = useState('');
   const [searchTerm, setSearchTerm]     = useState('');
-  const [committedSearch, setCommittedSearch] = useState('');
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [imageMode, setImageMode]       = useState('sprite');
   const [showShiny, setShowShiny]       = useState(false);
@@ -95,14 +94,14 @@ export default function App() {
       const [lo, hi] = GEN_RANGES[activeGen];
       list = list.filter(p => p.id >= lo && p.id <= hi);
     }
-    if (committedSearch) {
-      const q = committedSearch.toLowerCase();
+    if (searchTerm) {
+      const q = searchTerm.toLowerCase();
       const asNum = parseInt(q, 10);
       list = list.filter(p => p.name.includes(q) || p.id === asNum);
     }
     if (favoritesOnly) list = list.filter(p => favorites.has(p.id));
     return list;
-  }, [allPokemon, activeType, typeIds, activeHabitat, habitatIds, activeGen, committedSearch, favoritesOnly, favorites]);
+  }, [allPokemon, activeType, typeIds, activeHabitat, habitatIds, activeGen, searchTerm, favoritesOnly, favorites]);
 
   // Reset pagination when filters change
   const prevFilteredRef = useRef(filtered);
@@ -139,7 +138,6 @@ export default function App() {
 
   const handleSearch = useCallback(term => {
     setSearchTerm(term);
-    setCommittedSearch(term);
   }, []);
 
   const handleTypeChange = useCallback(type => {
@@ -158,8 +156,6 @@ export default function App() {
     handleHabitatChange('');
     setActiveGen('');
     setFavoritesOnly(false);
-    setShowShiny(false);
-    setImageMode('sprite');
   }, [handleSearch, handleTypeChange, handleHabitatChange]);
 
   const toggleFavorite = useCallback(id => {

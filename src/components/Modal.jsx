@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchJson, API } from '../utils/api';
 import { spriteUrls, pickSprite } from '../utils/sprites';
 import { pad, idFromUrl, statLabel, statColor } from '../utils/helpers';
@@ -65,15 +65,21 @@ async function getSpriteById(id) {
 async function buildEvoChain(url) {
   try {
     const data = await fetchJson(url);
-    const steps = [];
-    let node = data.chain;
-    while (node) {
-      const id = idFromUrl(node.species.url);
-      const sprite = await getSpriteById(id);
-      steps.push({ id, name: node.species.name, sprite });
-      node = node.evolves_to?.[0];
+    const stageMap = {};
+    function collectNodes(node, depth) {
+      if (!node) return;
+      if (!stageMap[depth]) stageMap[depth] = [];
+      stageMap[depth].push({ id: idFromUrl(node.species.url), name: node.species.name });
+      for (const next of node.evolves_to) collectNodes(next, depth + 1);
     }
-    return steps.length > 1 ? steps : [];
+    collectNodes(data.chain, 0);
+    const depths = Object.keys(stageMap).sort((a, b) => a - b);
+    if (depths.length <= 1) return [];
+    return Promise.all(
+      depths.map(d =>
+        Promise.all(stageMap[d].map(async mon => ({ ...mon, sprite: await getSpriteById(mon.id) })))
+      )
+    );
   } catch {
     return [];
   }
@@ -87,9 +93,17 @@ export default function Modal({ pokemonId, imageMode, showShiny, favorites, onTo
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    if (cardRef.current) cardRef.current.focus();
+  }, []);
+
   useEffect(() => {
     if (!pokemonId) return;
     let cancelled = false;
+    const controller = new AbortController();
+    const { signal } = controller;
     setLoading(true);
     setError(null);
     setPokemon(null);
@@ -97,8 +111,8 @@ export default function Modal({ pokemonId, imageMode, showShiny, favorites, onTo
 
     async function load() {
       try {
-        const poke = await fetchJson(`${API}/pokemon/${pokemonId}`);
-        const spec = await fetchJson(poke.species.url);
+        const poke = await fetchJson(`${API}/pokemon/${pokemonId}`, { signal });
+        const spec = await fetchJson(poke.species.url, { signal });
         const evos = await buildEvoChain(spec.evolution_chain.url);
         if (!cancelled) {
           setPokemon(poke);
@@ -112,15 +126,15 @@ export default function Modal({ pokemonId, imageMode, showShiny, favorites, onTo
         } catch {
           // strong-against is optional; fail silently
         }
-      } catch {
-        if (!cancelled) {
+      } catch (err) {
+        if (!cancelled && err.name !== 'AbortError') {
           setError('Failed to load Pokémon details.');
           setLoading(false);
         }
       }
     }
     load();
-    return () => { cancelled = true; };
+    return () => { cancelled = true; controller.abort(); };
   }, [pokemonId]);
 
   const handleKey = useCallback(e => { if (e.key === 'Escape') onClose(); }, [onClose]);
@@ -139,14 +153,14 @@ export default function Modal({ pokemonId, imageMode, showShiny, favorites, onTo
   const genus = species?.genera.find(g => g.language.name === 'en')?.genus || '';
 
   return (
-    <div className={styles.modal} role="dialog" aria-modal="true">
+    <div className={styles.modal} role="dialog" aria-modal="true" aria-labelledby="modal-pokemon-name">
       <div className={styles.backdrop} onClick={onClose} />
-      <div className={styles.card}>
+      <div className={styles.card} ref={cardRef} tabIndex={-1}>
         <button className={styles.closeBtn} onClick={onClose} aria-label="Close">✕</button>
 
         {loading && (
           <div className={styles.loading}>
-            <div className={styles.pokeballSpinner} />
+            <div className="pokeball-spinner" />
             <p>Loading…</p>
           </div>
         )}
@@ -162,8 +176,12 @@ export default function Modal({ pokemonId, imageMode, showShiny, favorites, onTo
                 onClick={() => onToggleFavorite(pokemon.id)}
               >♥</button>
               <div className={styles.detailNum}>#{pad(pokemon.id)} · {genus}</div>
-              <div className={styles.detailName}>{pokemon.name}</div>
-              <img className={styles.detailImg} src={sprite} alt={pokemon.name} />
+              <div id="modal-pokemon-name" className={styles.detailName}>{pokemon.name}</div>
+              <img
+                className={`${styles.detailImg}${imageMode !== 'artwork' ? ' ' + styles.pixelated : ''}`}
+                src={sprite}
+                alt={pokemon.name}
+              />
               <div className={styles.detailTypes}>
                 {pokemon.types.map(t => (
                   <span key={t.type.name} className={`type-badge type-${t.type.name}`}>{t.type.name}</span>
@@ -222,12 +240,16 @@ export default function Modal({ pokemonId, imageMode, showShiny, favorites, onTo
               <div className={styles.section}>
                 <h3>Evolution Chain</h3>
                 <div className={styles.evoChain}>
-                  {evoSteps.map((s, i) => (
-                    <div key={s.id} className={styles.evoStep}>
+                  {evoSteps.map((stage, i) => (
+                    <div key={i} className={styles.evoStep}>
                       {i > 0 && <span className={styles.evoArrow}>→</span>}
-                      <div className={styles.evoMon} onClick={() => onEvoClick(s.id)}>
-                        <img src={s.sprite} alt={s.name} />
-                        <span>{s.name}</span>
+                      <div className={styles.evoStage}>
+                        {stage.map(s => (
+                          <div key={s.id} className={styles.evoMon} onClick={() => onEvoClick(s.id)}>
+                            <img src={s.sprite} alt={s.name} />
+                            <span>{s.name}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   ))}

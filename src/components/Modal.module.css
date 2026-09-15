@@ -17,7 +17,7 @@
 
 .card {
   position: relative;
-  background: #16213e;
+  background: var(--card-bg);
   border-radius: 20px;
   width: 100%;
   max-width: 480px;
@@ -32,13 +32,13 @@
   top: 14px; right: 14px;
   background: none;
   border: none;
-  color: #8892b0;
+  color: var(--muted);
   font-size: 1.2rem;
   cursor: pointer;
   line-height: 1;
   transition: color .15s;
 }
-.closeBtn:hover { color: #eaeaea; }
+.closeBtn:hover { color: var(--text); }
 
 .loading {
   display: flex;
@@ -46,27 +46,8 @@
   align-items: center;
   gap: 16px;
   padding: 60px 20px;
-  color: #8892b0;
+  color: var(--muted);
   min-height: 200px;
-}
-
-.pokeballSpinner {
-  width: 50px; height: 50px;
-  border-radius: 50%;
-  background: linear-gradient(to bottom, #e3350d 50%, #fff 50%);
-  border: 3px solid #333;
-  position: relative;
-  animation: spin 1s linear infinite;
-}
-.pokeballSpinner::after {
-  content: '';
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%,-50%);
-  width: 12px; height: 12px;
-  background: #fff;
-  border-radius: 50%;
-  border: 3px solid #333;
 }
 
 .error { color: #ff6b6b; text-align: center; padding: 20px; }
@@ -89,22 +70,22 @@
 .favBtn:hover { color: #ff6b8a; transform: scale(1.2); }
 .favBtn.active { color: #ff3d67; }
 
-.detailNum { color: #8892b0; font-size: .85rem; font-weight: 600; }
+.detailNum { color: var(--muted); font-size: .85rem; font-weight: 600; }
 
 .detailName {
   font-size: 2rem;
   font-weight: 900;
   text-transform: capitalize;
   margin: 4px 0 10px;
-  color: #eaeaea;
+  color: var(--text);
 }
 
 .detailImg {
   width: 160px; height: 160px;
   object-fit: contain;
-  image-rendering: pixelated;
   transition: opacity 0.2s ease;
 }
+.pixelated { image-rendering: pixelated; }
 
 .detailTypes {
   display: flex;
@@ -119,13 +100,13 @@
   font-size: .8rem;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #8892b0;
+  color: var(--muted);
   margin-bottom: 10px;
 }
 
 .flavourText {
   font-size: .9rem;
-  color: #8892b0;
+  color: var(--muted);
   line-height: 1.6;
   font-style: italic;
 }
@@ -139,8 +120,8 @@
   margin-bottom: 8px;
   font-size: .88rem;
 }
-.statLabel { text-transform: capitalize; color: #8892b0; }
-.statVal { font-weight: 700; text-align: right; color: #eaeaea; }
+.statLabel { text-transform: capitalize; color: var(--muted); }
+.statVal { font-weight: 700; text-align: right; color: var(--text); }
 .statBarBg {
   background: rgba(255,255,255,.1);
   border-radius: 6px;
@@ -169,10 +150,10 @@
   font-size: .72rem;
   text-transform: uppercase;
   letter-spacing: .8px;
-  color: #8892b0;
+  color: var(--muted);
   margin-bottom: 3px;
 }
-.infoItem span { font-weight: 700; font-size: .95rem; color: #eaeaea; }
+.infoItem span { font-weight: 700; font-size: .95rem; color: var(--text); }
 
 /* Abilities */
 .abilityList { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -182,9 +163,9 @@
   padding: 5px 14px;
   font-size: .85rem;
   text-transform: capitalize;
-  color: #eaeaea;
+  color: var(--text);
 }
-.abilityPill.hidden { border: 1px dashed #8892b0; }
+.abilityPill.hidden { border: 1px dashed var(--muted); }
 
 /* Evolution chain */
 .evoChain {
@@ -195,7 +176,7 @@
   justify-content: center;
 }
 .evoStep { display: flex; align-items: center; gap: 6px; }
-.evoArrow { color: #8892b0; font-size: 1.2rem; }
+.evoArrow { color: var(--muted); font-size: 1.2rem; }
 .evoMon {
   display: flex;
   flex-direction: column;
@@ -206,7 +187,8 @@
 }
 .evoMon:hover { opacity: .75; }
 .evoMon img { width: 56px; height: 56px; image-rendering: pixelated; }
-.evoMon span { font-size: .75rem; text-transform: capitalize; font-weight: 600; color: #eaeaea; }
+.evoStage { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-items: center; }
+.evoMon span { font-size: .75rem; text-transform: capitalize; font-weight: 600; color: var(--text); }
 
 /* Strong Against section */
 .strongAgainstGrid {
@@ -244,7 +226,7 @@
   font-size: .75rem;
   text-transform: capitalize;
   font-weight: 600;
-  color: #eaeaea;
+  color: var(--text);
   text-align: center;
 }
 
