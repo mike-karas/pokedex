@@ -19,8 +19,6 @@ body {
   min-height: 100vh;
 }
 
-.hidden { display: none !important; }
-
 /* ── Type badge colours (applied dynamically, must stay global) ── */
 .type-badge {
   font-size: .68rem;
@@ -143,3 +141,22 @@ body {
 
 /* ── Spinner ── */
 @keyframes spin { to { transform: rotate(360deg); } }
+
+.pokeball-spinner {
+  width: 50px; height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(to bottom, var(--red) 50%, #fff 50%);
+  border: 3px solid #333;
+  position: relative;
+  animation: spin 1s linear infinite;
+}
+.pokeball-spinner::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px; height: 12px;
+  background: #fff;
+  border-radius: 50%;
+  border: 3px solid #333;
+}

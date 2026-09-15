@@ -41,7 +41,7 @@ export default function PokemonGrid({
 
       {loading && (
         <div className={styles.loading}>
-          <div className={styles.pokeballSpinner} />
+          <div className="pokeball-spinner" />
           <p>Loading…</p>
         </div>
       )}
